@@ -17,8 +17,12 @@
 #include <string.h>
 #include <jni.h>
 
-#define GET_ARRAY_LEN(array,len){len = (sizeof(array) / sizeof(array[0]));}
-
+/* This is a trivial JNI example where we use a native method
+ * to return a new VM String. See the corresponding Java source
+ * file located at:
+ *
+ *   apps/samples/hello-jni/project/src/com/example/hellojni/HelloJni.java
+ */
 JNIEXPORT jstring JNICALL Java_com_example_fred_javatocpp_JavaToCpp_stringFromJNI( JNIEnv* env,
                                                   jobject thiz )
 {
@@ -67,30 +71,19 @@ JNIEXPORT jstring JNICALL Java_com_example_fred_javatocpp_JavaToCpp_StringFromJa
     return returnstr;
 }
 
-JNIEXPORT jintArray JNICALL Java_com_example_fred_javatocpp_JavaToCpp_IntArrayFromJava(JNIEnv *env, jobject thiz, jintArray javaArray){
+JNIEXPORT jintArray JNICALL Java_com_example_fred_javatocpp_JavaToCpp_IntArrayFromJava(JNIEnv env, jobject thiz, jintArray javaArray){
     jintArray returnArray;
-    jint length;
-    length = (*env) ->GetArrayLength(env, javaArray);
-    returnArray = (*env) -> NewIntArray(env,length);
-    jint nativeArray[length];
-    (*env) -> GetIntArrayRegion(env, javaArray, 0, length, nativeArray);
+    int length;
+    length = (*env).GetArrayLength(env, javaArray);
+    returnArray = (*env).NewIntArray(env,length);
+    jint nativeArray[10];
+    (*env).GetIntArrayRegion(env, javaArray, 0, length, nativeArray);
     for (int i = 0; i < length / 2; ++i) {
         jint temp;
         temp = nativeArray[length - 1 - i];
         nativeArray[length - 1 - i] = nativeArray[i];
         nativeArray[i] = temp;
     }
-    (*env)->SetIntArrayRegion(env, returnArray, 0, length, nativeArray);
+    (*env).SetIntArrayRegion(env, returnArray, 0, length, nativeArray);
     return returnArray;
-}
-
-JNIEXPORT void JNICALL Java_com_example_fred_javatocpp_JavaToCpp_IntArrayFromJavaElement(JNIEnv *env, jobject thiz, jintArray javaArray, jint length){
-    jint* nativeDirectArray;
-    jboolean isCopy;
-    nativeDirectArray= (*env)->GetIntArrayElements(env, javaArray,&isCopy);
-
-    for(int i = 0 ; i < length ; i++){
-        nativeDirectArray[i] = nativeDirectArray[i] - 10;
-    }
-    (*env)->ReleaseIntArrayElements(env, javaArray,nativeDirectArray, 0);
 }
